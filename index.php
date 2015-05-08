@@ -25,8 +25,8 @@
 	//printpre($server_output);
 
 if (isset($_POST['query'])){
-	$lexer = new Lex();
-	$lexer->makeLex("AFINN-111.txt");
+	$lexer = new AFINNLex();
+	$lexer->makeLex();
 	//$lexer->showLex();
 	$dictionary = $lexer->getLex();
 	//printpre($dictionary);
