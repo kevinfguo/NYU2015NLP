@@ -1,7 +1,8 @@
 <?php
-	require 'helper.php';
+	require_once 'helper.php';
+	require_once 'lex.php';
 	ini_set('display_errors', true); ini_set('display_startup_errors', true); error_reporting(E_ALL);
-/*
+
 	$consumer_key = '8ndEpZxQUwYGoTGnj27Xj3sIB';
 	$consumer_secret = '83qdyRR16qsujckGFJzfwBYXWrF5tKOeqOl6MeOqpINuqXURFM';
 	$bearer_token = $consumer_key.":".$consumer_secret;
@@ -20,23 +21,26 @@
 	$server_output = curl_exec($ch);
 	curl_close($ch);
 	$server_output = json_decode($server_output, true);
-*/
-/*	printpre($server_output);
+
+	//printpre($server_output);
+
+if (isset($_POST['query'])){
+	$uquery = urlencode($_POST['query']);
 
 	$ch = curl_init();
 	curl_setopt_array($ch, array(
 		CURLOPT_RETURNTRANSFER => 1,
-		CURLOPT_URL => 'https://api.twitter.com/1.1/search/tweets.json?q=%40twitterapi&lang=en&count=100',
+		CURLOPT_URL => 'https://api.twitter.com/1.1/search/tweets.json?q='.$uquery.'&lang=en&count=100',
 		CURLOPT_HTTPHEADER => array("Authorization: Bearer ".$server_output['access_token'])
 	));
 	
 	$server_output = curl_exec($ch);
 	$server_output = json_decode($server_output, true);
-	printpre($server_output);
+	foreach($server_output['statuses'] as $tweet){
+		printpre($tweet['text']);
+	}
+	//printpre($server_output);
 	curl_close($ch);
-*/
-if (isset($_POST['query'])){
-	echo $_POST['query'];
 } else {
 
 ?>
@@ -54,5 +58,9 @@ if (isset($_POST['query'])){
 <?php
 
 }
+
+$lexer = new Lex();
+$lexer->makeLex("AFINN-111.txt");
+$lexer->showLex();
 
 ?>
