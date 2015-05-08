@@ -68,7 +68,7 @@ if (isset($_POST['query'])){
 		$AFINNvals = array();
 		$LabMTvals = array();
 		$ANEWvals = array();
-		$x = 0, $y = 0, $z = 0;
+		$x = 0; $y = 0; $z = 0;
 		foreach ($text as $word){
 			if (array_key_exists($word, $AFINNdictionary)){
 				$AFINNvals[] = $AFINNdictionary[$word];
