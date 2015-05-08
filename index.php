@@ -3,6 +3,8 @@
 	require_once 'lex.php';
 	require_once 'wordList.php';
 	require_once 'AFINNlex.php';
+	require_once 'LabMTlex.php';
+	require_once 'ANEWlex.php';
 	ini_set('display_errors', true); ini_set('display_startup_errors', true); error_reporting(E_ALL);
 
 	$consumer_key = '8ndEpZxQUwYGoTGnj27Xj3sIB';
@@ -27,18 +29,26 @@
 	//printpre($server_output);
 
 if (isset($_POST['query'])){
-	$lexer = new AFINNLex();
-	$lexer->makeLex();
-	//$lexer->showLex();
-	$dictionary = $lexer->getLex();
+	$AFINNlexer = new AFINNLex();
+	$AFINNlexer->makeLex();
+	//$AFINNlexer->showLex();
+	$AFINNdictionary = $AFINNlexer->getLex();
 	//printpre($dictionary);
+
+	$LabMTlexer = new AFINNLex();
+	$LabMTlexer->makeLex();
+	$LabMTdictionary = $LabMTlexer->getLex();
+
+	$ANEWlexer = new AFINNLex();
+	$ANEWlexer->makeLex();
+	$ANEWdictionary = $ANEWlexer->getLex();
 
 	$uquery = urlencode($_POST['query']);
 
 	$ch = curl_init();
 	curl_setopt_array($ch, array(
 		CURLOPT_RETURNTRANSFER => 1,
-		CURLOPT_URL => 'https://api.twitter.com/1.1/search/tweets.json?q='.$uquery.'+-filter:retweets+-filter:links&lang=en&count=100',
+		CURLOPT_URL => 'https://api.twitter.com/1.1/search/tweets.json?q='.$uquery.'+-filter:retweets&lang=en&count=100',
 		CURLOPT_HTTPHEADER => array("Authorization: Bearer ".$server_output['access_token'])
 	));
 	
@@ -55,22 +65,36 @@ if (isset($_POST['query'])){
 		$text = preg_replace('/\s+/', ' ', $text);
 		$text = trim($text);
 		$text = explode(' ', $text);
-		$vals = array();
-		$n = 0;
+		$AFINNvals = array();
+		$LabMTvals = array();
+		$ANEWvals = array();
+		$x = 0, $y = 0, $z = 0;
 		foreach ($text as $word){
-			if (array_key_exists($word, $dictionary)){
-				$vals[] = $dictionary[$word];
-				$n++;
+			if (array_key_exists($word, $AFINNdictionary)){
+				$AFINNvals[] = $AFINNdictionary[$word];
+				$x++;
 			}else{
-				$vals[] = 0;
+				$AFINNvals[] = 0;
+			}
+			if (array_key_exists($word, $LabMTdictionary)){
+				$LabMTvals[] = $LabMTdictionary[$word];
+				$y++;
+			}else{
+				$LabMTvals[] = 0;
+			}
+			if (array_key_exists($word, $ANEWdictionary)){
+				$ANEWvals[] = $ANEWdictionary[$word];
+				$z++;
+			}else{
+				$ANEWvals[] = 0;
 			}
 		}
-		if ($n == 0){
-			$tweet_valence = 0;
-		}else{
-			$tweet_valence = array_sum($vals)/$n;
-		}
-		echo '<td>'.$tweet_valence.'</td>';
+		$AFINN_tweet_valence = array_sum($vals)/$x;
+		$LabMT_tweet_valence = array_sum($vals)/$y;
+		$ANEW_tweet_valence = array_sum($vals)/$z;
+		echo '<td>'.$AFINN_tweet_valence.'</td>';
+		echo '<td>'.$LabMT_tweet_valence.'</td>';
+		echo '<td>'.$ANEW_tweet_valence.'</td>';
 		echo '</tr>';
 		//printpre($tweet_valence);
 		//printpre($text);
