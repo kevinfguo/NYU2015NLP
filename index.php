@@ -89,9 +89,9 @@ if (isset($_POST['query'])){
 				$ANEWvals[] = 0;
 			}
 		}
-		$AFINN_tweet_valence = array_sum($vals)/$x;
-		$LabMT_tweet_valence = array_sum($vals)/$y;
-		$ANEW_tweet_valence = array_sum($vals)/$z;
+		$AFINN_tweet_valence = array_sum($AFINNvals)/$x;
+		$LabMT_tweet_valence = array_sum($LabMTvals)/$y;
+		$ANEW_tweet_valence = array_sum($ANEWvals)/$z;
 		echo '<td>'.$AFINN_tweet_valence.'</td>';
 		echo '<td>'.$LabMT_tweet_valence.'</td>';
 		echo '<td>'.$ANEW_tweet_valence.'</td>';
