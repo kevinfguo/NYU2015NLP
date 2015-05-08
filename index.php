@@ -25,20 +25,50 @@
 	//printpre($server_output);
 
 if (isset($_POST['query'])){
+	$lexer = new Lex();
+	$lexer->makeLex("AFINN-111.txt");
+	//$lexer->showLex();
+	$dictionary = $lexer->getLex();
+	//printpre($dictionary);
+
 	$uquery = urlencode($_POST['query']);
 
 	$ch = curl_init();
 	curl_setopt_array($ch, array(
 		CURLOPT_RETURNTRANSFER => 1,
-		CURLOPT_URL => 'https://api.twitter.com/1.1/search/tweets.json?q='.$uquery.'&lang=en&count=100',
+		CURLOPT_URL => 'https://api.twitter.com/1.1/search/tweets.json?q='.$uquery.'+-filter:retweets&lang=en&count=100',
 		CURLOPT_HTTPHEADER => array("Authorization: Bearer ".$server_output['access_token'])
 	));
 	
 	$server_output = curl_exec($ch);
 	$server_output = json_decode($server_output, true);
+	echo '<table style="width:100%">';
+	echo '<tr><th>Tweet body</th><th>Valence Score</th></tr>';
 	foreach($server_output['statuses'] as $tweet){
-		printpre($tweet['text']);
+		//printpre($tweet['text']);
+		echo '<tr>';
+		echo '<td>'.$tweet['text'].'</td>';
+		$text = strtolower($tweet['text']);
+		$text = preg_replace('/[^a-z0-9 ]+/', ' ', $text);
+		$text = preg_replace('/\s+/', ' ', $text);
+		$text = trim($text);
+		$text = explode(' ', $text);
+		$vals = array();
+		foreach ($text as $word){
+			if (array_key_exists($word, $dictionary)){
+				$vals[] = $dictionary[$word];
+			}else{
+				$vals[] = 0;
+			}
+		}
+		$tweet_valence = array_sum($vals);
+		echo '<td>'.$tweet_valence.'</td>';
+		echo '</tr>';
+		//printpre($tweet_valence);
+		//printpre($text);
+		//printpre($vals);
 	}
+	echo '</table>';
 	//printpre($server_output);
 	curl_close($ch);
 } else {
@@ -58,9 +88,5 @@ if (isset($_POST['query'])){
 <?php
 
 }
-
-$lexer = new Lex();
-$lexer->makeLex("AFINN-111.txt");
-$lexer->showLex();
 
 ?>

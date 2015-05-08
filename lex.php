@@ -23,6 +23,10 @@
 				echo "<br>";
 			}
 		}
+
+		public function getLex(){
+			return $this->dictionary;
+		}
 	}
 	
 ?>
