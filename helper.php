@@ -10,4 +10,25 @@ function printpre($obj) {
     } 
     echo '</pre>';
   }
+
+function consensus($res){
+	$parts = str_split($res);
+	$pos = 0; $neg = 0; $neut = 0;
+	foreach($parts as $opinion){
+		if ($opinion == 'N'){
+			$neut++;
+		}else if ($opinion == '+'){
+			$pos++;
+		}else if ($opinion == '-'){
+			$neg++;
+		}
+	}
+	if ($pos > $neg && $pos > $neut){
+		return '+';
+	}else if ($neg > $pos && $neg > $neut){
+		return '-';
+	}else{
+		return 'N';
+	}
+}
 ?>

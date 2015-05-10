@@ -35,11 +35,11 @@ if (isset($_POST['query'])){
 	$AFINNdictionary = $AFINNlexer->getLex();
 	//printpre($dictionary);
 
-	$LabMTlexer = new AFINNLex();
+	$LabMTlexer = new LabMTLex();
 	$LabMTlexer->makeLex();
 	$LabMTdictionary = $LabMTlexer->getLex();
 
-	$ANEWlexer = new AFINNLex();
+	$ANEWlexer = new ANEWLex();
 	$ANEWlexer->makeLex();
 	$ANEWdictionary = $ANEWlexer->getLex();
 
@@ -48,14 +48,14 @@ if (isset($_POST['query'])){
 	$ch = curl_init();
 	curl_setopt_array($ch, array(
 		CURLOPT_RETURNTRANSFER => 1,
-		CURLOPT_URL => 'https://api.twitter.com/1.1/search/tweets.json?q='.$uquery.'+-filter:retweets&lang=en&count=100',
+		CURLOPT_URL => 'https://api.twitter.com/1.1/search/tweets.json?q='.$uquery.'+-filter:retweets+-filter:replies+-filter:links&lang=en&count=100',
 		CURLOPT_HTTPHEADER => array("Authorization: Bearer ".$server_output['access_token'])
 	));
 	
 	$server_output = curl_exec($ch);
 	$server_output = json_decode($server_output, true);
 	echo '<table style="width:100%">';
-	echo '<tr><th>Tweet body</th><th>Valence Score</th></tr>';
+	echo '<tr><th>Tweet body</th><th>AFINN Valence Score</th><th>LabMT Valence Score</th><th>ANEW Valence Score</th><th>Agreement</th><th>Final</th></tr>';
 	foreach($server_output['statuses'] as $tweet){
 		//printpre($tweet['text']);
 		echo '<tr>';
@@ -89,12 +89,51 @@ if (isset($_POST['query'])){
 				$ANEWvals[] = 0;
 			}
 		}
-		$AFINN_tweet_valence = array_sum($AFINNvals)/$x;
-		$LabMT_tweet_valence = array_sum($LabMTvals)/$y;
-		$ANEW_tweet_valence = array_sum($ANEWvals)/$z;
-		echo '<td>'.$AFINN_tweet_valence.'</td>';
-		echo '<td>'.$LabMT_tweet_valence.'</td>';
-		echo '<td>'.$ANEW_tweet_valence.'</td>';
+		$eval = '';
+		if ($x == 0){
+			$AFINN_tweet_valence = 0;
+			$eval = $eval.'N';
+		}else{
+			$AFINN_tweet_valence = array_sum($AFINNvals)/$x;
+			if ($AFINN_tweet_valence > 0){
+				$eval = $eval.'+';
+			}else if ($AFINN_tweet_valence < 0){
+				$eval = $eval.'-';
+			}else{
+				$eval = $eval.'N';
+			}
+		}
+		if ($y == 0){
+			$LabMT_tweet_valence = 0;
+			$eval = $eval.'N';
+		}else{
+			$LabMT_tweet_valence = array_sum($LabMTvals)/$y;
+			if ($LabMT_tweet_valence > 0){
+				$eval = $eval.'+';
+			}else if ($LabMT_tweet_valence < 0){
+				$eval = $eval.'-';
+			}else{
+				$eval = $eval.'N';
+			}
+		}
+		if ($z == 0){
+			$ANEW_tweet_valence = 0;
+			$eval = $eval.'N';
+		}else{
+			$ANEW_tweet_valence = array_sum($ANEWvals)/$z;
+			if ($ANEW_tweet_valence > 0){
+				$eval = $eval.'+';
+			}else if ($ANEW_tweet_valence < 0){
+				$eval = $eval.'-';
+			}else{
+				$eval = $eval.'N';
+			}
+		}
+		echo '<td>'.round($AFINN_tweet_valence, 3).'</td>';
+		echo '<td>'.round($LabMT_tweet_valence, 3).'</td>';
+		echo '<td>'.round($ANEW_tweet_valence, 3).'</td>';
+		echo '<td>'.$eval.'</td>';
+		echo '<td>'.consensus($eval).'</td>';
 		echo '</tr>';
 		//printpre($tweet_valence);
 		//printpre($text);
@@ -111,7 +150,8 @@ if (isset($_POST['query'])){
 <html>
 	<div>
 		<form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-  			HashTag: <input type="text" name="query"><br>
+  			Query: <input type="text" name="query"><br>
+			Example: "#happy", "#friday", "cake"
   			<input type="submit">
 		</form>
 	</div>
